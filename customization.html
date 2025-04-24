@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth - Customize</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pink: {
+                            100: '#ffeef2',
+                            200: '#ffd1dc',
+                            300: '#ffb3c6',
+                            400: '#ff95b0',
+                            500: '#ff779a',
+                            600: '#ff5984',
+                            700: '#ff3b6e',
+                        }
+                    },
+                    borderRadius: {
+                        '2xl': '1rem',
+                    }
+                }
+            }
+        }
+        let selectedFrameColor = '#ffd1dc'; // Default pink color
+
+function applyFrameColor(color) {
+    selectedFrameColor = color;
+    updatePhotoStrip();
+}
+
+function updatePhotoStrip() {
+    const strip = document.querySelector('.photo-strip');
+    if (strip) {
+        strip.style.borderColor = selectedFrameColor;
+        // Update bottom section background color with slight transparency
+        document.querySelector('.strip-footer').style.backgroundColor = selectedFrameColor + 'ee';
+    }
+}
+let selectedShape = 'none'; // Default shape
+function applyPhotoShape(shape) {
+    selectedShape = shape;
+    const containers = document.querySelectorAll('.photo-container');
+    
+    containers.forEach(container => {
+        // Remove all shape classes from container
+        container.classList.remove('square', 'rounded', 'circle', 'heart');
+        const img = container.querySelector('img');
+        
+        // Remove all shape classes from image
+        img.classList.remove('rounded-none', 'rounded-lg', 'rounded-full', 'heart-shape');
+        
+        // Apply new shape classes
+        switch(shape) {
+            case 'square':
+                container.classList.add('square');
+                img.classList.add('rounded-none');
+                break;
+            case 'rounded':
+                container.classList.add('rounded');
+                img.classList.add('rounded-lg');
+                break;
+            case 'circle':
+                container.classList.add('circle');
+                img.classList.add('rounded-full');
+                break;
+            case 'heart':
+                container.classList.add('heart');
+                img.classList.add('heart-shape');
+                break;
+        }
+    });
+}
+function toggleDate(show) {
+        const dateElement = document.getElementById('photo-date');
+        if (show) {
+            const now = new Date();
+            // Format date as "MM/DD/YYYY"
+            dateElement.textContent = now.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+        } else {
+            dateElement.textContent = '';
+        }
+    }
+
+    function updateLogo(lang) {
+        const logoElement = document.getElementById('photo-logo');
+        if (!logoElement) return;
+        
+        switch(lang) {
+            case 'ENG':
+                logoElement.textContent = 'ICTSO Photobooth';
+                break;
+            case 'KOR':
+                logoElement.textContent = 'ICTSO 포토부스';
+                break;
+            case 'CN':
+                logoElement.textContent = 'ICTSO 照相亭';
+                break;
+        }
+    }
+
+    // Wait for DOM to be loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set up date toggle listener
+        const dateCheckbox = document.querySelector('input[type="checkbox"]');
+        if (dateCheckbox) {
+            dateCheckbox.addEventListener('change', (e) => {
+                toggleDate(e.target.checked);
+            });
+        }
+
+        // Set up logo button listeners
+        document.querySelectorAll('.logo-btn').forEach(btn => {
+            btn.addEventListener('click', () => updateLogo(btn.textContent.trim()));
+        });
+    });
+</script>
+  <script>
+    window.addEventListener('load', () => {
+        // Load captured images from sessionStorage
+        const capturedImages = JSON.parse(sessionStorage.getItem('capturedImages'));
+        if (capturedImages && capturedImages.length) {
+            // Update preview images (only first 3 images)
+            capturedImages.slice(0, 3).forEach((imageUrl, index) => {
+                const img = document.querySelector(`img[alt="Photo ${index + 1}"]`);
+                if (img) {
+                    img.src = imageUrl;
+                }
+            });
+        } else {
+            // Redirect back to camera if no images
+            window.location.href = 'camera-mode.html';
+        }
+    });
+</script>
+<style>
+    .heart-shape {
+        clip-path: path("M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z");
+        transform: scale(1.2);
+    }
+
+    .photo-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+        overflow: hidden;
+        border-radius: 0; /* Reset default border radius */
+    }
+
+    .photo-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0; /* Reset default border radius */
+    }
+
+    /* Update shape classes */
+    .photo-container.square img {
+        border-radius: 0;
+    }
+
+    .photo-container.rounded img {
+        border-radius: 0.5rem;
+    }
+
+    .photo-container.circle img {
+        border-radius: 50%;
+    }
+
+    .photo-container.heart img {
+        padding: 10%;
+    
+    }
+</style>
+</head>
+<body class="bg-gradient-to-b from-white to-pink-100 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="flex justify-between items-center p-4 shadow-md bg-white rounded-b-2xl">
+        <span class="font-bold text-lg text-pink-600">photobooth</span>
+        <div class="hidden md:flex space-x-6 text-gray-500">
+            <a href="#" class="hover:text-pink-500 transition">home</a>
+            <a href="#" class="hover:text-pink-500 transition">about</a>
+            <a href="#" class="hover:text-pink-500 transition">privacy policy</a>
+            <a href="#" class="hover:text-pink-500 transition">contact</a>
+            <a href="#" class="text-pink-500">choose layout</a>
+        </div>
+        <button class="rounded-full bg-gray-100 hover:bg-pink-100 p-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                <path d="M9 18c-4.51 2-5-2-7-2"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-pink-600">customize your photo</h1>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8">
+         <!-- Left Side - Photo Strip Preview -->
+<div class="w-full md:w-1/3 lg:w-1/4">
+    <div class="w-full p-4 bg-white rounded-lg shadow-md">
+        <!-- Vertical photo strip with frame -->
+        <div class="photo-strip flex flex-col gap-2 border-8 rounded-md p-1 bg-pink-50" style="border-color: #ffd1dc;">
+            <div class="photo-container square bg-white overflow-hidden">
+                <img src="/placeholder.svg?height=150&width=200" alt="Photo 1" class="w-full h-full object-cover rounded-none">
+            </div>
+            <div class="photo-container square bg-white overflow-hidden">
+                <img src="/placeholder.svg?height=150&width=200" alt="Photo 2" class="w-full h-full object-cover rounded-none">
+            </div>
+            <div class="photo-container square bg-white overflow-hidden">
+                <img src="/placeholder.svg?height=150&width=200" alt="Photo 3" class="w-full h-full object-cover rounded-none">
+            </div>
+            <!-- Expanded footer section -->
+<div class="strip-footer p-4 text-white rounded-b-md" style="background-color: #ffd1dcee;">
+    <div class="flex flex-col gap-2">
+        <div id="photo-logo" class="text-center text-sm font-medium">ICTSO Photobooth</div>
+        <div id="photo-date" class="text-center text-xs"></div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+            <!-- Right Side - Customization Controls -->
+            <div class="w-full md:w-2/3 lg:w-3/4">
+              <!-- Frame Color -->
+<div class="mb-8">
+    <h3 class="text-lg font-medium mb-3">Frame Color</h3>
+    <div class="flex flex-wrap gap-2">
+        <button onclick="applyFrameColor('#ffd1dc')" class="w-8 h-8 rounded-full border bg-pink-300 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#93c5fd')" class="w-8 h-8 rounded-full border bg-blue-200 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#fde047')" class="w-8 h-8 rounded-full border bg-yellow-200 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#86efac')" class="w-8 h-8 rounded-full border bg-green-300 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#d8b4fe')" class="w-8 h-8 rounded-full border bg-purple-300 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#fcd34d')" class="w-8 h-8 rounded-full border bg-amber-200 hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#ffffff')" class="w-8 h-8 rounded-full border bg-white hover:ring-2 hover:ring-pink-400 transition"></button>
+        <button onclick="applyFrameColor('#000000')" class="w-8 h-8 rounded-full border bg-black hover:ring-2 hover:ring-pink-400 transition"></button>
+        <input type="color" 
+               class="w-8 h-8 rounded-md border cursor-pointer" 
+               value="#ffd1dc"
+               onchange="applyFrameColor(this.value)">
+    </div>
+</div>
+
+                <!-- Photo Shape -->
+<div class="mb-8">
+    <h3 class="text-lg font-medium mb-3">Photo Shape:</h3>
+    <div class="flex flex-wrap gap-3">
+        <button onclick="applyPhotoShape('square')" class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff779a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+        </button>
+        <button onclick="applyPhotoShape('rounded')" class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff779a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect>
+            </svg>
+        </button>
+        <button onclick="applyPhotoShape('circle')" class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff779a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+        </button>
+        <button onclick="applyPhotoShape('heart')" class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff779a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+
+                <!-- Stickers -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium mb-3">Stickers</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">⛔</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">🐰</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">🍀</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">💋</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">💗</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">🎀</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">✨</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">💖</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">👠</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">▼</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">△</button>
+                        <button class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center hover:bg-pink-200 transition text-2xl">🎨</button>
+                    </div>
+                </div>
+
+              <!-- Update the Logo buttons section -->
+<div class="mb-8">
+    <h3 class="text-lg font-medium mb-3">Logo:</h3>
+    <div class="flex gap-2">
+        <button class="logo-btn px-4 py-2 bg-white border border-gray-300 rounded-full hover:bg-pink-100 transition">ENG</button>
+        <button class="logo-btn px-4 py-2 bg-white border border-gray-300 rounded-full hover:bg-pink-100 transition">KOR</button>
+        <button class="logo-btn px-4 py-2 bg-white border border-gray-300 rounded-full hover:bg-pink-100 transition">CN</button>
+    </div>
+</div>
+
+                <!-- Date Toggle -->
+                <div class="mb-12">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 text-pink-500 rounded border-gray-300 focus:ring-pink-500">
+                        <span class="text-gray-700">Add Date</span>
+                    </label>
+                </div>
+
+                <!-- Bottom Actions -->
+                <div class="flex justify-end gap-4">
+                    <button class="px-8 py-3 border-2 border-pink-500 text-pink-500 rounded-full hover:bg-pink-50 transition font-medium">Retake</button>
+                    <button class="px-8 py-3 bg-pink-500 text-white rounded-full shadow-lg hover:bg-pink-600 transition font-medium">Download</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

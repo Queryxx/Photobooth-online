@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth - Choose Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pink: {
+                            100: '#ffeef2',
+                            200: '#ffd1dc',
+                            300: '#ffb3c6',
+                            400: '#ff95b0',
+                            500: '#ff779a',
+                            600: '#ff5984',
+                            700: '#ff3b6e',
+                        }
+                    },
+                    borderRadius: {
+                        '2xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-b from-white to-pink-100 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="flex justify-between items-center p-4 shadow-md bg-white rounded-b-2xl">
+        <span class="font-bold text-lg text-pink-600">photobooth</span>
+        <div class="hidden md:flex space-x-6 text-gray-500">
+            <a href="#" class="hover:text-pink-500 transition">home</a>
+            <a href="#" class="hover:text-pink-500 transition">about</a>
+            <a href="#" class="hover:text-pink-500 transition">privacy policy</a>
+            <a href="#" class="hover:text-pink-500 transition">contact</a>
+            <a href="#" class="text-pink-500">choose layout</a>
+        </div>
+        <button class="rounded-full bg-gray-100 hover:bg-pink-100 p-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                <path d="M9 18c-4.51 2-5-2-7-2"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-pink-600 mb-2">choose your layout</h1>
+            <p class="text-sm text-gray-500">NOTE: you have 3 seconds for each shot</p>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <!-- Layout A -->
+            <div class="flex flex-col items-center transition hover:scale-105">
+                <div class="border rounded-2xl shadow-md p-2 text-center bg-white mb-3 w-full">
+                    <div class="aspect-[2/3] relative">
+                        <!-- Vertical strip layout with 3 photos -->
+                        <div class="grid grid-rows-3 h-full gap-1">
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=150&width=200" alt="Sample 1" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=150&width=200" alt="Sample 2" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=150&width=200" alt="Sample 3" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 w-full text-center text-xs py-1 bg-white">photobooth</div>
+                    </div>
+                </div>
+                <h3 class="font-medium text-lg">layout A</h3>
+                <p class="text-sm text-gray-500">Size 6 x 2 Strip</p>
+                <p class="text-sm text-gray-500">(3 Pose)</p>
+            </div>
+
+            <!-- Layout B -->
+            <div class="flex flex-col items-center transition hover:scale-105">
+                <div class="border rounded-2xl shadow-md p-2 text-center bg-white mb-3 w-full relative">
+                    <div class="aspect-[2/3] relative">
+                        <!-- Vertical strip layout with 4 photos -->
+                        <div class="grid grid-rows-4 h-full gap-1">
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=120&width=200" alt="Sample 1" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=120&width=200" alt="Sample 2" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=120&width=200" alt="Sample 3" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=120&width=200" alt="Sample 4" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 w-full text-center text-xs py-1 bg-white">photobooth</div>
+                    </div>
+                    <span class="absolute top-3 right-3 bg-pink-200 text-pink-700 text-xs px-2 py-1 rounded-full">NEW!</span>
+                </div>
+                <h3 class="font-medium text-lg">layout B</h3>
+                <p class="text-sm text-gray-500">Size 6 x 2 Strip</p>
+                <p class="text-sm text-gray-500">(4 Pose)</p>
+            </div>
+
+            <!-- Layout C -->
+            <div class="flex flex-col items-center transition hover:scale-105">
+                <div class="border rounded-2xl shadow-md p-2 text-center bg-white mb-3 w-full relative">
+                    <div class="aspect-[2/3] relative">
+                        <!-- Vertical strip layout with 2 photos -->
+                        <div class="grid grid-rows-2 h-full gap-1">
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=180&width=200" alt="Sample 1" class="w-full h-full object-cover">
+                            </div>
+                            <div class="bg-gray-100 rounded-md overflow-hidden">
+                                <img src="/placeholder.svg?height=180&width=200" alt="Sample 2" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 w-full text-center text-xs py-1 bg-white">photobooth</div>
+                    </div>
+                    <span class="absolute top-3 right-3 bg-pink-200 text-pink-700 text-xs px-2 py-1 rounded-full">NEW!</span>
+                </div>
+                <h3 class="font-medium text-lg">layout C</h3>
+                <p class="text-sm text-gray-500">Size 6 x 2 Strip</p>
+                <p class="text-sm text-gray-500">(2 Pose)</p>
+            </div>
+
+            <!-- Layout D -->
+            <div class="flex flex-col items-center transition hover:scale-105">
+                <div class="border rounded-2xl shadow-md p-2 text-center bg-white mb-3 w-full relative">
+                    <div class="aspect-[2/3] relative">
+                        <!-- Vertical strip layout with 6 photos in a 2x3 grid -->
+                        <div class="grid grid-rows-3 h-full gap-1">
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 1" class="w-full h-full object-cover">
+                                </div>
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 2" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 3" class="w-full h-full object-cover">
+                                </div>
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 4" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 5" class="w-full h-full object-cover">
+                                </div>
+                                <div class="bg-gray-100 rounded-md overflow-hidden">
+                                    <img src="/placeholder.svg?height=100&width=100" alt="Sample 6" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 w-full text-center text-xs py-1 bg-white">photobooth</div>
+                    </div>
+                    <span class="absolute top-3 right-3 bg-pink-200 text-pink-700 text-xs px-2 py-1 rounded-full">NEW!</span>
+                </div>
+                <h3 class="font-medium text-lg">layout D</h3>
+                <p class="text-sm text-gray-500">Size 6 x 4 Strip</p>
+                <p class="text-sm text-gray-500">(6 Pose)</p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

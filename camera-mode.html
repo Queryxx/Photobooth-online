@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICTSO Photobooth - Camera Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pink: {
+                            100: '#ffeef2',
+                            200: '#ffd1dc',
+                            300: '#ffb3c6',
+                            400: '#ff95b0',
+                            500: '#ff779a',
+                            600: '#ff5984',
+                            700: '#ff3b6e',
+                        }
+                    },
+                    borderRadius: {
+                        '2xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+  
+    <style>
+        .camera-container {
+            aspect-ratio: 4/3;
+            max-width: 800px;
+            width: 100%;
+            background: #000;
+        }
+        
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .filter-normal {
+            filter: none;
+        }
+        .filter-grayscale {
+            filter: grayscale(100%);
+        }
+        .filter-sepia {
+            filter: sepia(100%);
+        }
+        .filter-warm {
+            filter: saturate(150%) hue-rotate(30deg);
+        }
+        .filter-cool {
+            filter: saturate(150%) hue-rotate(-30deg);
+        }
+        .filter-vintage {
+            filter: sepia(50%) contrast(120%) brightness(90%);
+        }
+        .camera-container button svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .camera-container button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    </style>
+  <script>
+  let imageCaptures = [];
+let stream = null;
+let imageCount = 0;
+let isCapturing = false;
+let isCameraInverted = false;
+
+// Add CSS to handle mirroring
+const style = document.createElement('style');
+style.textContent = `
+    #camera-feed {
+        transform: scaleX(-1);
+    }
+    #camera-feed.environment {
+        transform: scaleX(1);
+    }
+`;
+document.head.appendChild(style);
+
+async function startCamera() {
+    try {
+        const constraints = {
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "user"
+            }
+        };
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoElement = document.getElementById('camera-feed');
+        videoElement.srcObject = stream;
+        await videoElement.play();
+        
+        // Set initial mirror state
+        videoElement.classList.remove('environment');
+        
+        // Enable capture button after camera starts
+        document.getElementById('capture-btn').disabled = false;
+    } catch (err) {
+        console.error("Error accessing camera:", err);
+        alert("Unable to access camera. Please ensure camera permissions are granted.");
+        document.getElementById('capture-btn').disabled = true;
+    }
+}
+
+async function toggleCamera() {
+    try {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+
+        isCameraInverted = !isCameraInverted;
+        const constraints = {
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: isCameraInverted ? "environment" : "user"
+            }
+        };
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoElement = document.getElementById('camera-feed');
+        videoElement.srcObject = stream;
+        await videoElement.play();
+
+        // Toggle mirror class based on camera mode
+        if (isCameraInverted) {
+            videoElement.classList.add('environment');
+        } else {
+            videoElement.classList.remove('environment');
+        }
+
+    } catch (err) {
+        console.error("Error toggling camera:", err);
+        alert("Error switching camera. Please try again.");
+        isCameraInverted = !isCameraInverted;
+        startCamera();
+    }
+}
+
+function captureImage() {
+    if (imageCount >= 3) return;
+    
+    const videoElement = document.getElementById('camera-feed');
+    const canvas = document.createElement('canvas');
+    const size = Math.min(videoElement.videoWidth, videoElement.videoHeight);
+    const x = (videoElement.videoWidth - size) / 2;
+    const y = (videoElement.videoHeight - size) / 2;
+
+    canvas.width = 800;
+    canvas.height = 800;
+    const context = canvas.getContext('2d');
+
+    // Draw the camera capture with correct orientation
+    if (!isCameraInverted) {
+        // Front camera - mirror the image
+        context.save();
+        context.scale(-1, 1);
+        context.translate(-canvas.width, 0);
+        context.drawImage(videoElement, x, y, size, size, 0, 0, 800, 800);
+        context.restore();
+    } else {
+        // Back camera - normal orientation
+        context.drawImage(videoElement, x, y, size, size, 0, 0, 800, 800);
+    }
+
+    // Apply current filter if any
+    if (currentFilter !== 'none' && currentFilter !== 'normal') {
+        context.filter = videoElement.style.filter;
+    }
+
+    const imageUrl = canvas.toDataURL('image/jpeg');
+    imageCaptures.push(imageUrl);
+    
+    // Show and update thumbnail
+    const thumbnailContainer = document.getElementById(`thumbnail-container-${imageCount + 1}`);
+    const thumbnail = document.getElementById(`thumbnail-${imageCount + 1}`);
+    thumbnailContainer.classList.remove('hidden');
+    thumbnail.src = imageUrl;
+    
+    imageCount++;
+    
+    // Update step indicator
+    document.getElementById('step-indicator').textContent = `${imageCount}/3`;
+    
+    if (imageCount === 3) {
+        document.getElementById('capture-btn').disabled = true;
+    }
+}
+
+    async function startPhotoSequence() {
+        if (isCapturing) return;
+        isCapturing = true;
+        document.getElementById('capture-btn').disabled = true;
+
+        for (let i = 0; i < 3; i++) {
+            // Start countdown
+            for (let timer = 3; timer > 0; timer--) {
+                document.getElementById('step-indicator').textContent = `Get ready: ${timer}`;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            // Take photo
+            captureImage();
+            
+            if (i < 2) {
+                // Wait between shots (except after the last one)
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        isCapturing = false;
+    }
+    let currentFilter = 'none';
+    
+    function applyFilter(filter) {
+        const videoElement = document.getElementById('camera-feed');
+        currentFilter = filter;
+        
+        switch(filter) {
+            case 'normal':
+                videoElement.style.filter = 'none';
+                break;
+            case 'grayscale':
+                videoElement.style.filter = 'grayscale(100%)';
+                break;
+            case 'sepia':
+                videoElement.style.filter = 'sepia(100%)';
+                break;
+            case 'warm':
+                videoElement.style.filter = 'saturate(150%) hue-rotate(30deg)';
+                break;
+            case 'cool':
+                videoElement.style.filter = 'saturate(150%) hue-rotate(-30deg)';
+                break;
+            case 'vintage':
+                videoElement.style.filter = 'sepia(50%) contrast(120%) brightness(90%)';
+                break;
+        }
+    }
+    function captureImage() {
+    if (imageCount >= 3) return;
+    
+    const videoElement = document.getElementById('camera-feed');
+    const canvas = document.createElement('canvas');
+    const size = Math.min(videoElement.videoWidth, videoElement.videoHeight);
+    const x = (videoElement.videoWidth - size) / 2;
+    const y = (videoElement.videoHeight - size) / 2;
+
+    canvas.width = 800;
+    canvas.height = 800;
+    const context = canvas.getContext('2d');
+
+    // Apply filter before drawing
+    if (currentFilter !== 'none' && currentFilter !== 'normal') {
+        switch(currentFilter) {
+            case 'grayscale':
+                context.filter = 'grayscale(100%)';
+                break;
+            case 'sepia':
+                context.filter = 'sepia(100%)';
+                break;
+            case 'warm':
+                context.filter = 'saturate(150%) hue-rotate(30deg)';
+                break;
+            case 'cool':
+                context.filter = 'saturate(150%) hue-rotate(-30deg)';
+                break;
+            case 'vintage':
+                context.filter = 'sepia(50%) contrast(120%) brightness(90%)';
+                break;
+        }
+    }
+
+    // Draw the camera capture with correct orientation
+    if (isCameraInverted) {
+        // Front camera - normal orientation
+        context.drawImage(videoElement, x, y, size, size, 0, 0, 800, 800);
+    } else {
+        // Back camera - mirror the image
+        context.save();
+        context.scale(-1, 1);
+        context.translate(-canvas.width, 0);
+        context.drawImage(videoElement, x, y, size, size, 0, 0, 800, 800);
+        context.restore();
+    }
+
+    const imageUrl = canvas.toDataURL('image/jpeg');
+    imageCaptures.push(imageUrl);
+    
+    // Show and update thumbnail
+    const thumbnailContainer = document.getElementById(`thumbnail-container-${imageCount + 1}`);
+    const thumbnail = document.getElementById(`thumbnail-${imageCount + 1}`);
+    thumbnailContainer.classList.remove('hidden');
+    thumbnail.src = imageUrl;
+    
+    imageCount++;
+    
+    // Update step indicator
+    document.getElementById('step-indicator').textContent = `${imageCount}/3`;
+    
+    // Update button visibility after capture
+    updateButtonVisibility();
+    
+    if (imageCount === 3) {
+        document.getElementById('capture-btn').disabled = true;
+    }
+}
+    function goToCustomization() {
+    // Store captured images in sessionStorage
+    sessionStorage.setItem('capturedImages', JSON.stringify(imageCaptures));
+    // Navigate to customization page
+    window.location.href = 'customization.html';
+}
+// Add this function to control button visibility
+function updateButtonVisibility() {
+    const actionButtons = document.getElementById('action-buttons');
+    if (imageCount > 0) {
+        actionButtons.classList.remove('hidden');
+    } else {
+        actionButtons.classList.add('hidden');
+    }
+    
+    // Update DONE button state
+    const doneButton = document.getElementById('done-btn');
+    doneButton.disabled = imageCount < 3;
+    doneButton.classList.toggle('opacity-50', imageCount < 3);
+}
+function retake() {
+    imageCaptures = [];
+    imageCount = 0;
+    isCapturing = false;
+    document.getElementById('step-indicator').textContent = '';
+    document.getElementById('capture-btn').disabled = false;
+    
+    // Hide and reset thumbnails
+    for (let i = 1; i <= 3; i++) {
+        const thumbnailContainer = document.getElementById(`thumbnail-container-${i}`);
+        const thumbnail = document.getElementById(`thumbnail-${i}`);
+        thumbnailContainer.classList.add('hidden');
+        thumbnail.src = '/placeholder.svg?height=150&width=200';
+    }
+    
+    // Update button visibility after retake
+    updateButtonVisibility();
+}
+    // Start camera when page loads
+    window.addEventListener('load', startCamera);
+</script>
+</head>
+<body class="bg-gradient-to-b from-white to-pink-100 min-h-screen">
+    <nav class="flex justify-between items-center p-4 shadow-md bg-white rounded-b-2xl">
+        <span class="font-bold text-lg text-pink-600">ICTSO Photobooth</span>
+        <div class="hidden md:flex space-x-6 text-gray-500">
+            <a href="#" class="hover:text-pink-500 transition">home</a>
+            <a href="#" class="hover:text-pink-500 transition">about</a>
+            <a href="#" class="hover:text-pink-500 transition">privacy policy</a>
+            <a href="#" class="hover:text-pink-500 transition">contact</a>
+            <a href="#" class="text-pink-500">choose layout</a>
+        </div>
+        <button class="rounded-full bg-gray-100 hover:bg-pink-100 p-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                <path d="M9 18c-4.51 2-5-2-7-2"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row gap-6">
+            <div class="w-full md:w-3/4 flex flex-col items-center">
+                <div class="w-full flex justify-center mb-2">
+                    <span id="step-indicator" class="text-sm font-medium text-gray-600 bg-white px-4 py-1 rounded-full shadow-sm">0/3</span>
+                </div>
+                
+                <div class="camera-container w-full rounded-xl shadow-lg overflow-hidden bg-black relative">
+                    <video id="camera-feed" autoplay playsinline></video>
+                    <button id="capture-btn" onclick="startPhotoSequence()" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white rounded-full p-4 hover:bg-pink-600 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                   <!-- Replace the existing camera toggle button -->
+<button onclick="toggleCamera()" class="absolute top-4 right-4 bg-white/50 hover:bg-white/75 p-2 rounded-full transition-all">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 4h-3.17L15 2H9L7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M18 12v-2"/>
+        <path d="M6 12v-2"/>
+    </svg>
+</button>
+                </div>
+                
+                <div class="mt-6 flex justify-center gap-3 flex-wrap">
+                    <button onclick="applyFilter('normal')" class="rounded-full w-12 h-12 bg-gray-200 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        Normal
+                    </button>
+                    <button onclick="applyFilter('grayscale')" class="rounded-full w-12 h-12 bg-gray-100 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        B&W
+                    </button>
+                    <button onclick="applyFilter('sepia')" class="rounded-full w-12 h-12 bg-yellow-100 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        Sepia
+                    </button>
+                    <button onclick="applyFilter('warm')" class="rounded-full w-12 h-12 bg-orange-100 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        Warm
+                    </button>
+                    <button onclick="applyFilter('cool')" class="rounded-full w-12 h-12 bg-blue-100 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        Cool
+                    </button>
+                    <button onclick="applyFilter('vintage')" class="rounded-full w-12 h-12 bg-amber-100 hover:ring-2 hover:ring-pink-400 transition flex items-center justify-center text-xs font-medium">
+                        Vintage
+                    </button>
+                </div>
+                
+                <div class="mt-8 flex justify-center gap-4">
+                   <!-- Replace the existing buttons div -->
+<div id="action-buttons" class="mt-8 flex justify-center gap-4 hidden">
+    <button onclick="retake()" class="px-8 py-3 border-2 border-pink-500 text-pink-500 rounded-full hover:bg-pink-50 transition font-medium">
+        Retake
+    </button>
+    <button id="done-btn" 
+            onclick="goToCustomization()" 
+            class="px-8 py-3 bg-pink-500 text-white rounded-full shadow-lg hover:bg-pink-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+        DONE
+    </button>
+</div>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-1/4 flex flex-col">
+                <div class="bg-white p-3 rounded-xl shadow-md">
+                  
+<!-- Update the thumbnails section with hidden containers -->
+<div class="flex flex-col gap-2">
+    <div id="thumbnail-container-1" class="bg-gray-100 rounded-md overflow-hidden hidden">
+        <img id="thumbnail-1" src="/placeholder.svg?height=150&width=200" alt="Thumbnail 1" class="w-full h-full object-cover">
+    </div>
+    <div id="thumbnail-container-2" class="bg-gray-100 rounded-md overflow-hidden hidden">
+        <img id="thumbnail-2" src="/placeholder.svg?height=150&width=200" alt="Thumbnail 2" class="w-full h-full object-cover">
+    </div>
+    <div id="thumbnail-container-3" class="bg-gray-100 rounded-md overflow-hidden hidden">
+        <img id="thumbnail-3" src="/placeholder.svg?height=150&width=200" alt="Thumbnail 3" class="w-full h-full object-cover">
+    </div>
+    <div class="w-full text-center text-xs py-1 bg-gray-50 rounded-md">ICTSO Photobooth</div>
+</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
